@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Room</title>
+    <style>
+        /* Set background color */
+        body {
+            background-color: #000000;
+        }
+
+        /* Set font styles */
+        h1, p, input, button {
+            font-family: 'Helvetica Neue', sans-serif;
+            font-weight: 300;
+            color: #ffffff;
+        }
+
+        /* Set message box styles */
+        #messages {
+            height: 300px;
+            overflow-y: scroll;
+            background-color: #000000;
+            border: 1px solid #5cb6ab;
+            padding: 10px;
+            margin-bottom: 10px;
+
+        }
+
+        /* Set message input box styles */
+        #message-box {
+            display: flex;
+            background-color: #004d40;
+            border: 1px solid #004d40;
+            padding: 10px;
+        }
+
+        /* Set message input styles */
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        /* Set send button styles */
+        #send-button {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+
+        /* Set send button hover styles */
+        #send-button:hover {
+            background-color: #009688;
+            color: #ffffff;
+        }
+
+        /* Set chat room title styles */
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Set message box styles */
+        .message-box {
+            background-color: #009688;
+            border: 1px solid #004d40;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+
+        /* Set message text styles */
+        .message-box p {
+            margin: 0;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .large-message {
+            max-width: 90%;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Chat Room</h1>
+    <div id="messages"></div>
+    <div id="message-box">
+        <input type="text" id="message-input">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:9000/ws");
+
+        const messages = document.getElementById("messages");
+        const messageInput = document.getElementById("message-input");
+        const sendButton = document.getElementById("send-button");
+
+        function addMessage(msg) {
+            const p = document.createElement("p");
+            p.textContent = msg;
+            messages.appendChild(p);
+        }
+
+        socket.onopen = () => {
+            console.log("Connected to chat room server");
+        }
+
+        socket.onmessage = (event) => {
+            addMessage(event.data);
+        }
+
+        socket.onclose = () => {
+            console.log("Disconnected from chat room server");
+        }
+
+        function addMessage(msg, size = "normal") {
+            const div = document.createElement("div");
+            div.classList.add("message-box");
+            if (size === "large") {
+                div.classList.add("large-message");
+            }
+            const p = document.createElement("p");
+            p.textContent = msg;
+            div.appendChild(p);
+            messages.appendChild(div);
+        }
+
+
+        sendButton.onclick = () => {
+            const msg = messageInput.value;
+            if (msg.trim() === "") {
+                return;
+            }
+            socket.send(msg);
+            messageInput.value = "";
+        }
+
+        messageInput.addEventListener("keyup", (event) => {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                sendButton.click();
+            }
+        });
+
+        
+    </script>
+</body>
+
+</html>
